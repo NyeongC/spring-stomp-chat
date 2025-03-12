@@ -11,6 +11,6 @@ public class JwtAuthFilter extends GenericFilter {
 
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
-
+        filterChain.doFilter(servletRequest, servletResponse); // 다시 원래 체인으로 돌아가라
     }
 }
