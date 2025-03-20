@@ -100,11 +100,10 @@ export default{
             })
         },
         disconnectWebSocket(){
-            // if(this.ws){
-            //     this.ws.close();
-            //     console.log("disconnected!!")
-            //     this.ws = null;
-            // }
+            if(this.stompClient && this.stompClient.connected){
+                this.stompClient.unsubscribe(`/topic/1`);
+                this.stompClient.disconnect();
+            }
         }
     },
 }
