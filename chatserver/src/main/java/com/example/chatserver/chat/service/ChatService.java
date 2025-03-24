@@ -122,4 +122,42 @@ public class ChatService {
                 .build();
         chatParticipantRepository.save(chatParticipant);
     }
+
+    public List<ChatMessageDto> getChatHistory(Long roomId){
+//        내가 해당 채팅방의 참여자가 아닐경우 에러
+        ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(()-> new EntityNotFoundException("room cannot be found"));
+        Member member = memberRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName()).orElseThrow(()->new EntityNotFoundException("member cannot be found"));
+        List<ChatParticipant> chatParticipants = chatParticipantRepository.findByChatRoom(chatRoom);
+        boolean check = false;
+        for(ChatParticipant c : chatParticipants){
+            if(c.getMember().equals(member)){
+                check = true;
+            }
+        }
+        if(!check)throw new IllegalArgumentException("본인이 속하지 않은 채팅방입니다.");
+//        특정 room에 대한 message조회
+        List<ChatMessage> chatMessages = chatMessageRepository.findByChatRoomOrderByCreatedTimeAsc(chatRoom);
+        List<ChatMessageDto> chatMessageDtos = new ArrayList<>();
+        for(ChatMessage c : chatMessages){
+            ChatMessageDto chatMessageDto = ChatMessageDto.builder()
+                    .message(c.getContent())
+                    .senderEmail(c.getMember().getEmail())
+                    .build();
+            chatMessageDtos.add(chatMessageDto);
+        }
+        return chatMessageDtos;
+    }
+
+    public boolean isRoomPaticipant(String email, Long roomId){
+        ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(()-> new EntityNotFoundException("room cannot be found"));
+        Member member = memberRepository.findByEmail(email).orElseThrow(()->new EntityNotFoundException("member cannot be found"));
+
+        List<ChatParticipant> chatParticipants = chatParticipantRepository.findByChatRoom(chatRoom);
+        for(ChatParticipant c : chatParticipants){
+            if(c.getMember().equals(member)){
+                return true;
+            }
+        }
+        return false;
+    }
 }
